@@ -1,0 +1,22 @@
+{
+    "name": "client",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "scripts": {
+      "build": "./node_modules/webpack/bin/webpack.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "jquery": "^3.3.1",
+      "sawtooth-sdk": "^1.0.1",
+      "sawtooth-sdk-client": "0.0.2",
+      "webpack-cli": "^2.0.12"
+    },
+    "devDependencies": {
+      "webpack": "^4.1.1"
+    }
+  }
+  
