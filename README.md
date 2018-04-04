@@ -1,11 +1,16 @@
 # Blockchain-SupplyChain
-Using JavaScript and some other libraries together with Hyperledger Sawtooth to create a demo application. This application will manage products and transfer of ownership. Besides that there will be some interesting views included to show for example an owned-products list etc.
+Using JavaScript and some other dependencies together with Hyperledger Sawtooth to create a demo application. This application will manage products and transfer of ownership. Besides that there will be some interesting views included to show for example an owned-products list etc.
 
 # Run the demo
 ## Get the code
 First clone this git repository to your desktop or any other folder of your choosing. 
     
 `$ git clone "https://github.com/berryverschueren/Blockchain-SupplyChain.git"`
+
+## Install dependencies
+Both the client and processor directories contain a package file. The dependencies mentioned here have to be installed. This can be done by running the following command. (Do this in both directories!)
+
+`$ npm install`
 
 ## Kickstart Docker
 Next you want to run the .yaml file to start up the Docker environment for you. This can be done from the directory in which you cloned the repository. 
