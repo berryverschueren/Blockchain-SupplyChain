@@ -37,29 +37,40 @@ It could be that you have to install some prerequisites, I will try to sum up mo
 Make sure you have the following installed before you attempt to run the demo.
 
 - cURL
-    - sudo apt install curl
-    - curl -V
+    ```
+    $ sudo apt install curl
+    $ curl -V
+    ```
+
 - Docker
-    - https://docs.docker.com/install/linux/docker-ce/ubuntu/
-    - docker --version
+    ```
+    Check this guide: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+    $ docker --version
+    ```
 - Docker-Compose
-    - sudo apt update 
-    - sudo apt install docker-compose 
-    - docker-compose --version
+    ```
+    $ sudo apt update 
+    $ sudo apt install docker-compose 
+    $ docker-compose --version
+    ```
 - Node.js & npm
-    - sudo bash -c "cat >/etc/apt/sources.list.d/nodesource.list" <<EOL deb https://deb.nodesource.com/node_6.x xenial main deb-src https://deb.nodesource.com/node_6.x xenial main EOL
-    - curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
-    - sudo apt update
-    - sudo apt install nodejs
-    - sudo apt install npm
-    - node --version && npm --version
+    ```
+    $ sudo bash -c "cat >/etc/apt/sources.list.d/nodesource.list" <<EOL deb https://deb.nodesource.com/node_6.x xenial main deb-src https://deb.nodesource.com/node_6.x xenial main EOL
+    $ curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+    $ sudo apt update
+    $ sudo apt install nodejs
+    $ sudo apt install npm
+    $ node --version && npm --version
+    ```
 - Go language
-    - sudo apt update
-    - sudo curl -O https://storage.googleapis.com/golang/go.1.9.2.linux-amd64.tar.gz
+    ```
+    $ sudo apt update
+    $ sudo curl -O https://storage.googleapis.com/golang/go.1.9.2.linux-amd64.tar.gz
         - switch 1.9.2 for the newest version
-    - sudo tar -xvf go1.9.2.linux-amd64.tar.gz
+    $ sudo tar -xvf go1.9.2.linux-amd64.tar.gz
         - switch 1.9.2 for the newest version
-    - sudo mv go /usr/local
-    - echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-    - source ~/.profile
-    - go version
+    $ sudo mv go /usr/local
+    $ echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+    $ source ~/.profile
+    $ go version
+    ```
