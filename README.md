@@ -31,7 +31,7 @@ Finally it remains to start the processor application to handle our transactions
 Now that everything is set up, you can use the application by opening the .html file from the client directory in any (preferably Firefox) browser.
 
 # Side notes
-It could be that you have to install some prerequisites, I will try to sum up most of them below. Besides that it may happen that the application does not work because of CORS issues. The easiest fix is to use the CorsE plugin for Firefox.
+It could be that you have to install some prerequisites, I will try to sum up most of them below. Besides that it may happen that the application does not work because of CORS issues. The easiest fix is to use the CorsE plugin for Firefox. Finally, I am building & testing this application using the Linux OS. It could be that the project has some issues when working with Mac or Windows, however I am hoping that Docker takes away most of these issues.
 
 ## Prerequisites
 Make sure you have the following installed before you attempt to run the demo.
