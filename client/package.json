@@ -1,10 +1,14 @@
 {
   "name": "client",
   "version": "1.0.0",
-  "description": "",
+  "description": "Client app to submit transactions to the blockchain validator",
+  "repository": {
+    "url": "http://github.com/berryverschueren/Blockchain-SupplyChain.git"
+  },
   "main": "app.js",
   "scripts": {
-    "build": "./node_modules/webpack/bin/webpack.js"
+    "dev": "webpack && npm start",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "Berry Verschueren",
@@ -13,9 +17,19 @@
     "jquery": "^3.3.1",
     "sawtooth-sdk": "^1.0.1",
     "sawtooth-sdk-client": "0.0.2",
-    "webpack-cli": "^2.0.12"
-  },
-  "devDependencies": {
-    "webpack": "^4.1.1"
+    "webpack-cli": "^2.0.12",
+    "express": "^4.16.3",
+    "babel-cli": "^6.26.0",
+    "babel-register": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "file-loader": "^1.1.11",
+    "webpack": "^4.1.1",
+    "webpack-dev-server": "^3.1.1",
+    "webpack-dev-middleware": "^3.1.1",
+    "webpack-hot-middleware": "^2.21.2",
+    "webpack-hot-client": "^2.2.1",
+    "request": "^2.85.0"
   }
 }

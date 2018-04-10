@@ -9,7 +9,7 @@ const getAddress = (key, length = 64) => createHash('sha512').update(key).digest
 
 // Configuration variables.
 const KEY_NAME = 'berry-chain.keys',
-    API_URL = 'http://localhost:8008',
+    API_URL = 'http://172.22.0.3:8008',
     FAMILY = 'berry-chain',
     VERSION = '0.0',
     PREFIX = getAddress(FAMILY, 6);

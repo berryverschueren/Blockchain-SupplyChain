@@ -14,7 +14,7 @@ const concatNewOwners = (existing, ownerContainers) => {
 
 // Configuration variables.
 const KEY_NAME = 'berry-chain.keys',
-    API_URL = 'http://localhost:8008',
+    API_URL = 'http://172.22.0.4:8008',
     FAMILY = 'berry-chain',
     VERSION = '0.0',
     PREFIX = getAddress(FAMILY, 6);
@@ -45,6 +45,7 @@ const readableAddress = (address) => {
 app.loadTransactionHistory = function () {
     console.log('Loading transaction history..');
     $.get(`${API_URL}/transactions`, ({ data }) => {
+        console.log(data);
         if (data && data.length) {
             clearInput('#tbl_history');
             for (let i = 0; i < data.length; i++) {
@@ -127,6 +128,7 @@ $('[name="sel_currentUser"]').on('change', function () {
     if (this.value === 'new') {
         // Add new keypair to the localstorage.
         app.user = makeKeyPair();
+        console.log(app.user);
         app.keys.push(app.user);
         saveKeys(app.keys);
     } else if (this.value === 'none') {

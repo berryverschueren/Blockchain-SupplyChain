@@ -1,7 +1,10 @@
 {
   "name": "processor",
   "version": "1.0.0",
-  "description": "",
+  "description": "Processor app for supplying a transaction handler definition",
+  "repository": {
+    "url": "http://github.com/berryverschueren/Blockchain-SupplyChain.git"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -10,9 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sawtooth-sdk": "^0.8.1"
-  },
-  "devDependencies": {
+    "sawtooth-sdk": "^0.8.1",
     "request": "^2.85.0"
   }
 }
