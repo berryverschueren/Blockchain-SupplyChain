@@ -2,6 +2,7 @@ import path from 'path';
 import express from 'express';
 let webpackDevServer = require('webpack-dev-server');
 const proxy = require('express-http-proxy');
+const { REST_API } = require('./config');
 const app = express();
 
 // console.log('Using development configuration!');
@@ -38,7 +39,7 @@ app.use('/', express.static(process.cwd() + '/dist'));
 
 // this is the proxy - it will request the external api when you hit /api
 // http://localhost:3000/api -> http://example.com/api
-app.use('/api', proxy('localhost:8008/', {  
+app.use('/api', proxy(REST_API/*'localhost:8008/'*/, {  
     proxyReqPathResolver: function(req) {
     return require('url').parse(req.url).path;
   }

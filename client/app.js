@@ -4,6 +4,7 @@ const { createHash } = require('crypto');
 const $ = require('jquery');
 const { getKeys, makeKeyPair, saveKeys, getState, submitUpdate, getTransactions } = require('./state');
 const { addOption, addRow, addAction, clearOptions, clearInput, clearText } = require('./components');
+const { REST_API_PROXY } = require('./config');
 
 // Encoding helper
 const getAddress = (key, length = 64) => createHash('sha512').update(key).digest('hex').slice(0, length);
@@ -14,7 +15,7 @@ const concatNewOwners = (existing, ownerContainers) => {
 
 // Configuration variables.
 const KEY_NAME = 'berry-chain.keys',
-    API_URL = 'http://localhost:3000/api',
+    API_URL = REST_API_PROXY, //'http://localhost:3000/api',
     FAMILY = 'berry-chain',
     VERSION = '0.0',
     PREFIX = getAddress(FAMILY, 6);

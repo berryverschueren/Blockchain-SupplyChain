@@ -69,6 +69,35 @@ services:
         tail -f /dev/null
       "
 
+  client:
+    build: ./client
+    image: client-image
+    container_name: client-container
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    expose:
+      - 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - processor
+    command: npm run dev
+
+  processor:
+    build: ./processor
+    image: processor-image
+    container_name: processor-container
+    volumes:
+      - ./processor:/usr/src/app
+      - /usr/src/app/node_modules
+    expose:
+      - 4000
+    ports:
+      - '4000:4000'
+    depends_on:
+      - rest-api
+
 # Copyright 2017 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

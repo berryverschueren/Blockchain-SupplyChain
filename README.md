@@ -7,31 +7,21 @@ First clone this git repository to your desktop or any other folder of your choo
     
 `$ git clone "https://github.com/berryverschueren/Blockchain-SupplyChain.git"`
 
-## Install dependencies
-Both the client and processor directories contain a package file. The dependencies mentioned here have to be installed. This can be done by running the following command. (Do this in both directories!)
-
-`$ npm install`
-
 ## Kickstart Docker
 Next you want to run the .yaml file to start up the Docker environment for you. This can be done from the directory in which you cloned the repository. 
     
 `$ docker-compose up`
 
-## Build the client application
-Before starting the client application, always build it first. This can be done using webpack. Go to the client directory and run the following command.
-    
-`$ npm run build`
-
-## Start the processor application
-Finally it remains to start the processor application to handle our transactions and communicate with the blockchain. This has to be done from the processor directory. Run the following command.
-    
-`$ npm start`
-
 ## Up and running
-Now that everything is set up, you can use the application by opening the .html file from the client directory in any (preferably Firefox) browser.
+Now that everything is set up, you can use the application by opening http://localhost:3000 in any (preferably Firefox) browser.
+
+## Exit the demo
+To stop and exit the demo, press ctrl + c in your terminal to stop the docker containers. Wait for this process to finalize and then use the following command to clean up all containers.
+
+`$ docker-compose down`
 
 # Side notes
-It could be that you have to install some prerequisites, I will try to sum up most of them below. Besides that it may happen that the application does not work because of CORS issues. The easiest fix is to use the CorsE plugin for Firefox. Finally, I am building & testing this application using the Linux OS. It could be that the project has some issues when working with Mac or Windows, however I am hoping that Docker takes away most of these issues.
+It could be that you have to install some prerequisites, I will try to sum up most of them below. Finally, I am building & testing this application using the Linux OS. It could be that the project has some issues when working with Mac or Windows, however I am hoping that Docker takes away most of these issues.
 
 ## Prerequisites
 Make sure you have the following installed before you attempt to run the demo.
