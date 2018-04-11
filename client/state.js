@@ -16,16 +16,27 @@ const KEY_NAME = 'berry-chain.keys',
     PREFIX = getAddress(FAMILY, 6);
 
 // Fetch key-pairs from localStorage.
-const getKeys = () => {
-    const storedKeys = localStorage.getItem(KEY_NAME);
-    // Verify key-pairs exist.
-    if (!storedKeys) return [];
-    // Split and return key-pairs.
-    return storedKeys.split(';').map((pair) => {
-        const separated = pair.split(',');
+const getUsers = () => {
+    // const storedKeys = localStorage.getItem(KEY_NAME);
+    // // Verify key-pairs exist.
+    // if (!storedKeys) return [];
+    // // Split and return key-pairs.
+    // return storedKeys.split(';').map((pair) => {
+    //     const separated = pair.split(',');
+    //     return {
+    //         public: separated[0],
+    //         private: separated[1]
+    //     };
+    // });
+    const storedUsers = localStorage.getItem(KEY_NAME);
+    if (!storedUsers) return [];
+    return storedUsers.split(';').map((userProperties) => {
+        const user = userProperties.split(',');
         return {
-            public: separated[0],
-            private: separated[1]
+            name: user[0],
+            public_key: user[1],
+            private_key: user[2],
+            address: user[3]
         };
     });
 }
@@ -40,10 +51,12 @@ const makeKeyPair = () => {
 }
 
 // Save key-pairs to localStorage.
-const saveKeys = (keys) => {
-    // Join keys into pairs.
-    const paired = keys.map(pair => [pair.public, pair.private].join(','));
-    // Join pairs into key-pair string and save to localStorage.
+const saveUsers = (users) => {
+    // // Join keys into pairs.
+    // const paired = keys.map(pair => [pair.public, pair.private].join(','));
+    // // Join pairs into key-pair string and save to localStorage.
+    // localStorage.setItem(KEY_NAME, paired.join(';'));
+    const paired = users.map(user => [user.name, user.public_key, user.private_key, user.address].join(','));
     localStorage.setItem(KEY_NAME, paired.join(';'));
 }
 
@@ -90,9 +103,9 @@ const submitUpdate = (payload, privKey, cb) => {
 }
 
 module.exports = {
-    getKeys,
+    getUsers,
     makeKeyPair,
-    saveKeys,
+    saveUsers,
     getState,
     submitUpdate
 }

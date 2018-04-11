@@ -2,7 +2,7 @@
 
 const { createHash } = require('crypto');
 const $ = require('jquery');
-const { getKeys, makeKeyPair, saveKeys, getState, submitUpdate, getTransactions } = require('./state');
+const { getUsers, makeKeyPair, saveUsers, getState, submitUpdate, getTransactions } = require('./state');
 const { addOption, addRow, addAction, clearOptions, clearInput, clearText } = require('./components');
 const { REST_API_PROXY } = require('./config');
 
@@ -20,7 +20,8 @@ const KEY_NAME = 'berry-chain.keys',
     VERSION = '0.0',
     PREFIX = getAddress(FAMILY, 6);
 
-const app = { user: null, keys: [], assets: [], transfers: [], requestTarget: null }
+// const app = { user: null, keys: [], assets: [], transfers: [] }
+const app = { user: null, users: [], assets: [], requests: [], proposals: [], transportRequests: [], transports: [] }
 
 app.clearViews = function () {
     console.log('Clearing views..');
@@ -37,6 +38,10 @@ app.clearViews = function () {
     clearOptions('[name="sel_requestTarget"]');
     clearOptions('[name="sel_requestAsset"]');
     clearOptions('[name="sel_statusAsset"]');
+    clearOptions('[name="sel_assetDetails"]');
+
+    clearText('#txt_newUsername');
+    clearText('#txt_newAddress');
 }
 
 const readableAddress = (address) => {
@@ -83,6 +88,7 @@ app.refresh = function () {
                 addRow('#tbl_yourAssets', asset.name, asset.status);
                 addOption('[name="sel_proposalAsset"]', asset.name);
                 addOption('[name="sel_statusAsset"]', asset.name);
+                addOption('[name="sel_assetDetails"]', asset.name);
             }
         });
 
@@ -93,7 +99,7 @@ app.refresh = function () {
             .forEach(transfer => addAction('#lst_yourRequests', transfer.name, 'Accept'));
 
         // Retrieve all possible public keys.
-        let pubKeys = this.keys.map(pair => pair.public);
+        let pubKeys = this.users.map(pair => pair.public);
         pubKeys = concatNewOwners(pubKeys, assets);
         pubKeys = concatNewOwners(pubKeys, transfers);
 
@@ -105,10 +111,10 @@ app.refresh = function () {
                 addOption('[name="sel_requestTarget"]', key);
             }
         });
-    });
 
-    // Load transcation history and repopulate tbl_history.
-    this.loadTransactionHistory();
+        // Load transcation history and repopulate tbl_history.
+        this.loadTransactionHistory();
+    });
 }
 
 app.update = function (data) {
@@ -130,14 +136,15 @@ $('[name="sel_currentUser"]').on('change', function () {
         // Add new keypair to the localstorage.
         app.user = makeKeyPair();
         console.log(app.user);
-        app.keys.push(app.user);
-        saveKeys(app.keys);
+        app.users.push(app.user);
+        saveUsers(app.users);
+        addOption('[name="sel_currentUser"]', app.user.public);
     } else if (this.value === 'none') {
         // Clear current user.
         app.user = null;
     } else {
         // Change current user.
-        app.user = app.keys.find(key => key.public === this.value);
+        app.user = app.users.find(key => key.public === this.value);
     }
     // Refresh UI to update using new current user.
     app.refresh();
@@ -179,6 +186,17 @@ $('[name="sel_requestTarget"]').on('change', function () {
     }
 });
 
+// Asset details selection changed.
+$('[name="sel_assetDetails"]').on('change', function () {
+    console.log('Asset details selection changed: ' + this.value);
+    // Clear asset details table.
+    clearInput('#tbl_assetDetails');
+    if (this.value !== 'none') {
+        // Repopulate asset details table.
+        // TODO: get asset details and insert into table.
+    }
+});
+
 // Request button clicked.
 $('#btn_requestTransfer').on('click', function () {
     // Retrieve selected values.
@@ -197,6 +215,31 @@ $('#btn_requestTransfer').on('click', function () {
         // Submit payload.
         app.update(data);
     }
+});
+
+// Create new user button clicked.
+$('#btn_newUser').on('click', function () {
+    // Retrieve input values.
+    const newUsername = $('#txt_newUsername').val();
+    const newAddress = $('#txt_newAddress').val();
+    // Verify values.
+    if (newUsername && newAddress) {
+        console.log('Creating new user: ' + newUsername + ', ' + newAddress);
+        
+        const keyPair = makeKeyPair();
+        app.user = {
+            name: newUsername,
+            public_key: keyPair.public,
+            private_key: keyPair.private,
+            address: newAddress
+        }
+        app.users.push(app.user);
+        saveUsers(app.users);
+        addOption('[name="sel_currentUser"]', app.users.name);        
+    }
+    // Clear input fields.
+    clearText('#txt_newUsername');
+    clearText('#txt_newAddress');
 });
 
 // Create button clicked.
@@ -320,6 +363,8 @@ $('#lst_yourRequests').on('click', '.reject', function () {
 });
 
 // Initialize.
-app.keys = getKeys();
-app.keys.forEach(pair => addOption('[name="sel_currentUser"]', pair.public));
+app.users = getUsers();
+console.log('USERS:');
+console.log(app.users);
+app.users.forEach(user => addOption('[name="sel_currentUser"]', user.public));
 app.refresh();

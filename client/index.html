@@ -18,8 +18,14 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="col-sm-6">
+            <div class="row">
+                <h3>Create new user</h3>
+                <input id="txt_newUsername" type="text" placeholder="Enter username..">
+                <input id="txt_newAddress" type="text" placeholder="Enter address..">
+                <input id="btn_newUser" type="button" value="Create">
+            </div>
             <div class="row">
                 <h3>Select current user</h3>
                 <select name="sel_currentUser">
@@ -35,22 +41,6 @@
                         <th>Status</th>
                     </tr>
                     <tbody id="tbl_yourAssets"></tbody>
-                </table>
-            </div>
-            <div class="row">
-                <h3>Asset details</h3>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Target</th>
-                        <th>Type</th>
-                        <th>Action</th>
-                        <th>Date</th>
-                        <th>Batcher</th>
-                        <th>Signer</th>
-                    </tr>
-                    <tbody id="tbl_assetDetails"></tbody>
                 </table>
             </div>
             <div class="row">
@@ -94,6 +84,25 @@
                 <input id="txt_status" type="text" placeholder="Enter status..">
                 <input id="btn_changeStatus" type="button" value="Change">
             </div>
+            <!-- <div class="row">
+                <h3>Asset details</h3>
+                <select name="sel_assetDetails">
+                    <option value="none">Select asset..</option>
+                </select>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Target</th>
+                        <th>Type</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>Batcher</th>
+                        <th>Signer</th>
+                    </tr>
+                    <tbody id="tbl_assetDetails"></tbody>
+                </table>
+            </div> -->
         </div>
         <div class="col-sm-6">
             <div class="row">

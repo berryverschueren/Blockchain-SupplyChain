@@ -1,0 +1,86 @@
+Asset Address Data
+{
+    asset_name: 'Honda Civic',
+    current_owner: {
+        name: 'Manufacturer A',
+        public_key: '0241551212082507128481934',
+        address: 'Parklaan 92, 3456 XA, Rotterdam'
+    },
+    asset_status: 'Transport accepted!',
+    date: '1523447642'
+}
+
+Request Address Data
+{
+    asset_name: 'Honda Civic',
+    current_owner: {
+        name: 'Manufacturer A',
+        public_key: '0241551212082507128481934',
+        address: 'Parklaan 92, 3456 XA, Rotterdam'
+    },
+    target_owner: {
+        name: 'Dealer A',
+        public_key: '1039518942180491724012412',
+        address: 'Kerkstraat 12, 7654 DE, Helmond'
+    },
+    date: '1523447956'
+}
+
+Proposal Address Data
+{
+    asset_name: 'Honda Civic',
+    current_owner: {
+        name: 'Manufacturer A',
+        public_key: '0241551212082507128481934',
+        address: 'Parklaan 92, 3456 XA, Rotterdam'
+    },
+    target_owner: {
+        name: 'Dealer A',
+        public_key: '1039518942180491724012412',
+        address: 'Kerkstraat 12, 7654 DE, Helmond'
+    },
+    date: '1523447956'
+}
+
+TransportRequest Address Data
+{
+    asset_name: 'Honda Civic',
+    current_owner: {
+        name: 'Manufacturer A',
+        public_key: '0241551212082507128481934',
+        address: 'Parklaan 92, 3456 XA, Rotterdam'
+    },
+    target_owner: {
+        name: 'Dealer A',
+        public_key: '1039518942180491724012412',
+        address: 'Kerkstraat 12, 7654 DE, Helmond'
+    },
+    transporter: {
+        name: 'Transporter A',
+        public_key: '2354637548657986534253567',
+        address: 'Kanaaldijk 204, 8512 AB, Eindhoven'
+    },
+    date: '1523447956'
+}
+
+Transport Address Data
+{
+    asset_name: 'Honda Civic',
+    current_owner: {
+        name: 'Manufacturer A',
+        public_key: '0241551212082507128481934',
+        address: 'Parklaan 92, 3456 XA, Rotterdam'
+    },
+    target_owner: {
+        name: 'Dealer A',
+        public_key: '1039518942180491724012412',
+        address: 'Kerkstraat 12, 7654 DE, Helmond'
+    },
+    transporter: {
+        name: 'Transporter A',
+        public_key: '2354637548657986534253567',
+        address: 'Kanaaldijk 204, 8512 AB, Eindhoven'
+    },
+    transport_status: 'ON_THE_WAY',
+    date: '1523447956'
+}
