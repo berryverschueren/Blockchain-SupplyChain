@@ -17,6 +17,7 @@
     "jquery": "^3.3.1",
     "sawtooth-sdk": "^1.0.1",
     "sawtooth-sdk-client": "0.0.2",
+    "express-http-proxy": "^1.1.0",
     "webpack-cli": "^2.0.12",
     "express": "^4.16.3",
     "babel-cli": "^6.26.0",

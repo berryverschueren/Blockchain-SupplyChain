@@ -2,7 +2,7 @@
 
 const { TransactionProcessor } = require('sawtooth-sdk/processor');
 const { JSONHandler } = require('./handlers');
-const VALIDATOR_URL = 'tcp://172.22.0.2:4004';
+const VALIDATOR_URL = 'tcp://localhost:4004';
 
 // Initialize the Transaction Processor.
 const txProc = new TransactionProcessor(VALIDATOR_URL);
