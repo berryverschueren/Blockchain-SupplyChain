@@ -86,9 +86,9 @@ app.refresh = function () {
             // Add to tbl_yourAssets & sel_proposalAsset & sel_statusAsset if owner === user.
             if (this.user && asset.owner === this.user.public) {
                 addRow('#tbl_yourAssets', asset.name, asset.status);
-                addOption('[name="sel_proposalAsset"]', asset.name);
-                addOption('[name="sel_statusAsset"]', asset.name);
-                addOption('[name="sel_assetDetails"]', asset.name);
+                addOption('[name="sel_proposalAsset"]', asset.name, asset.name);
+                addOption('[name="sel_statusAsset"]', asset.name, asset.name);
+                addOption('[name="sel_assetDetails"]', asset.name, asset.name);
             }
         });
 
@@ -104,11 +104,11 @@ app.refresh = function () {
         pubKeys = concatNewOwners(pubKeys, transfers);
 
         // Repopulate sel_proposalTarget & sel_requestTarget with the public keys.
-        pubKeys.forEach(key => {
+        this.users.forEach(u => {
             // Skip key of current user.
-            if (this.user && key !== this.user.public) {
-                addOption('[name="sel_proposalTarget"]', key);
-                addOption('[name="sel_requestTarget"]', key);
+            if (this.user && u.name !== this.user.name) {
+                addOption('[name="sel_proposalTarget"]', u.public_key, u.name);
+                addOption('[name="sel_requestTarget"]', u.public_key, u.name);
             }
         });
 
@@ -125,26 +125,19 @@ app.update = function (data) {
         data['date'] = Date.now() / 1000 | 0;
         // Submit data and add user private key to sign the transaction. 
         // Refresh UI if the transaction submission succeeded.
-        submitUpdate(data, this.user.private, success => success ? app.refresh() : null);
+        submitUpdate(data, this.user.private_key, success => success ? app.refresh() : null);
     }
 }
 
 // Select current user.
 $('[name="sel_currentUser"]').on('change', function () {
     console.log('Current user selection changed: ' + this.value);
-    if (this.value === 'new') {
-        // Add new keypair to the localstorage.
-        app.user = makeKeyPair();
-        console.log(app.user);
-        app.users.push(app.user);
-        saveUsers(app.users);
-        addOption('[name="sel_currentUser"]', app.user.public);
-    } else if (this.value === 'none') {
+    if (this.value === 'none') {
         // Clear current user.
         app.user = null;
     } else {
         // Change current user.
-        app.user = app.users.find(key => key.public === this.value);
+        app.user = app.users.find(user => user.public_key === this.value);
     }
     // Refresh UI to update using new current user.
     app.refresh();
@@ -180,7 +173,7 @@ $('[name="sel_requestTarget"]').on('change', function () {
         app.assets.forEach(asset => {
             // Verify ownership.
             if (asset.owner === this.value) {
-                addOption('[name="sel_requestAsset"]', asset.name);
+                addOption('[name="sel_requestAsset"]', asset.name, asset.name);
             }
         });
     }
@@ -235,7 +228,7 @@ $('#btn_newUser').on('click', function () {
         }
         app.users.push(app.user);
         saveUsers(app.users);
-        addOption('[name="sel_currentUser"]', app.users.name);        
+        addOption('[name="sel_currentUser"]', app.user.public_key, app.user.name);        
     }
     // Clear input fields.
     clearText('#txt_newUsername');
@@ -253,7 +246,7 @@ $('#btn_createAsset').on('click', function () {
         let data = {
             'action': 'create',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': 'Asset created!'
         };
         // Submit payload.
@@ -364,7 +357,5 @@ $('#lst_yourRequests').on('click', '.reject', function () {
 
 // Initialize.
 app.users = getUsers();
-console.log('USERS:');
-console.log(app.users);
-app.users.forEach(user => addOption('[name="sel_currentUser"]', user.public));
+app.users.forEach(user => addOption('[name="sel_currentUser"]', user.public_key, user.name));
 app.refresh();

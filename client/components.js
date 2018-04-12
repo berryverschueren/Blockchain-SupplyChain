@@ -3,9 +3,9 @@
 const $ = require('jquery');
 
 // Add select option.
-const addOption = (parent, value, selected = false) => {
+const addOption = (parent, value, text, selected = false) => {
     const selectTag = selected ? ' selected' : '';
-    $(parent).append(`<option value="${value}"${selectTag}>${value}</option>`);
+    $(parent).append(`<option value="${value}"${selectTag}>${text}</option>`);
 }
 
 // Add a new table row.
