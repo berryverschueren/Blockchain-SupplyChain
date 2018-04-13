@@ -129,6 +129,30 @@ app.update = function (data) {
     }
 }
 
+// Create new user button clicked.
+$('#btn_newUser').on('click', function () {
+    // Retrieve input values.
+    const newUsername = $('#txt_newUsername').val();
+    const newAddress = $('#txt_newAddress').val();
+    // Verify values.
+    if (newUsername && newAddress) {
+        console.log('Creating new user: ' + newUsername + ', ' + newAddress);
+        const keyPair = makeKeyPair();
+        app.user = {
+            name: newUsername,
+            public_key: keyPair.public,
+            private_key: keyPair.private,
+            address: newAddress
+        }
+        app.users.push(app.user);
+        saveUsers(app.users);
+        addOption('[name="sel_currentUser"]', app.user.public_key, app.user.name);        
+    }
+    // Clear input fields.
+    clearText('#txt_newUsername');
+    clearText('#txt_newAddress');
+});
+
 // Select current user.
 $('[name="sel_currentUser"]').on('change', function () {
     console.log('Current user selection changed: ' + this.value);
@@ -208,31 +232,6 @@ $('#btn_requestTransfer').on('click', function () {
         // Submit payload.
         app.update(data);
     }
-});
-
-// Create new user button clicked.
-$('#btn_newUser').on('click', function () {
-    // Retrieve input values.
-    const newUsername = $('#txt_newUsername').val();
-    const newAddress = $('#txt_newAddress').val();
-    // Verify values.
-    if (newUsername && newAddress) {
-        console.log('Creating new user: ' + newUsername + ', ' + newAddress);
-        
-        const keyPair = makeKeyPair();
-        app.user = {
-            name: newUsername,
-            public_key: keyPair.public,
-            private_key: keyPair.private,
-            address: newAddress
-        }
-        app.users.push(app.user);
-        saveUsers(app.users);
-        addOption('[name="sel_currentUser"]', app.user.public_key, app.user.name);        
-    }
-    // Clear input fields.
-    clearText('#txt_newUsername');
-    clearText('#txt_newAddress');
 });
 
 // Create button clicked.
@@ -357,5 +356,6 @@ $('#lst_yourRequests').on('click', '.reject', function () {
 
 // Initialize.
 app.users = getUsers();
+console.log(app.users);
 app.users.forEach(user => addOption('[name="sel_currentUser"]', user.public_key, user.name));
 app.refresh();

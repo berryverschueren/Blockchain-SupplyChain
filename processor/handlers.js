@@ -35,7 +35,7 @@ const verifyAvailability = (entry) => {
 }
 
 // Add asset to state.
-const create = (state, name, signer, status, date) => {
+const create = (state, name, owner, status, date) => {
     // Get asset address.
     const assetAddress = getAssetAddress(name);
     return state.get([assetAddress]).then(entries => {
@@ -44,7 +44,8 @@ const create = (state, name, signer, status, date) => {
         // Verify address is available.
         verifyAvailability(entry);
         // Construct data.
-        let data = { [assetAddress]: encode({ 'name': name, 'owner': signer, 'date': date, 'status': status }) };
+        let data = { [assetAddress]: encode({ 'name': name, 'owner': owner, 'date': date, 'status': status }) };
+        console.log(data);
         // Update state.
         return state.set(data);
     });
@@ -193,13 +194,20 @@ class JSONHandler extends TransactionHandler {
         const header = TransactionHeader.decode(txn.header);
         const signer = header.signerPubkey;
         console.log(JSON.parse(txn.payload));
-        const { action, asset, owner, date, type, status } = JSON.parse(txn.payload);
+        const { 
+            action, 
+            asset, 
+            owner, 
+            date, 
+            type, 
+            status 
+        } = JSON.parse(txn.payload);
         // Distribute to designated function based on payload action.
-        console.log(`Handling transaction: ${action} > ${asset}`, owner ? `>${owner.slice(0, 8)}...` : '', `:: ${signer.slice(0, 8)}...`);
+        console.log(`Handling transaction: ${action} > ${asset}`, owner ? `>${owner.name}...` : '', `:: ${signer.slice(0, 8)}...`);
         // Choose correct function based on given action.
         switch (action) {
             case 'create':
-                return create(state, asset, signer, status, date);
+                return create(state, asset, owner, status, date);
                 break;
             case 'propose':
                 return propose(state, asset, owner, signer, status, date);

@@ -30,8 +30,8 @@ const getUsers = () => {
     // });
     const storedUsers = localStorage.getItem(KEY_NAME);
     if (!storedUsers) return [];
-    return storedUsers.split(';').map((userProperties) => {
-        const user = userProperties.split(',');
+    return storedUsers.split(';;').map((userProperties) => {
+        const user = userProperties.split('||');
         return {
             name: user[0],
             public_key: user[1],
@@ -56,8 +56,8 @@ const saveUsers = (users) => {
     // const paired = keys.map(pair => [pair.public, pair.private].join(','));
     // // Join pairs into key-pair string and save to localStorage.
     // localStorage.setItem(KEY_NAME, paired.join(';'));
-    const paired = users.map(user => [user.name, user.public_key, user.private_key, user.address].join(','));
-    localStorage.setItem(KEY_NAME, paired.join(';'));
+    const paired = users.map(user => [user.name, user.public_key, user.private_key, user.address].join('||'));
+    localStorage.setItem(KEY_NAME, paired.join(';;'));
 }
 
 // Fetch current berry-chain state from the validator.
