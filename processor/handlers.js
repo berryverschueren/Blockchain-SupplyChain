@@ -17,15 +17,21 @@ const getAssetAddress = (name) => PREFIX + '00' + getAddress(name, 62);
 const getTransferAddress = (asset) => PREFIX + '01' + getAddress(asset, 62);
 
 // Encoding/decoding helpers and constants.
-const encode = (obj) => Buffer.from(JSON.stringify(obj, Object.keys(obj).sort()));
-const decode = (buf) => JSON.parse(buf.toString());
+const encode = (obj) => {
+    const jsonString = JSON.stringify(obj);//, Object.keys(obj).sort());
+    return Buffer.from(jsonString);
+}
+const decode = (buf) => {
+    const jsonString = JSON.parse(buf.toString());
+    return jsonString;
+}
 
 // Check helpers and constants.
 const verifyTarget = (signer, entry) => {
-    if (!entry || entry.length === 0 || !decode(entry).target || signer !== decode(entry).target) throw new InvalidTransaction('Not target.');
+    if (!entry || entry.length === 0 || signer !== decode(entry).transfer.target.public_key) throw new InvalidTransaction('Not target.');
 }
 const verifyOwnership = (signer, entry) => {
-    if (!entry || entry.length === 0 || !decode(entry).owner || signer !== decode(entry).owner) throw new InvalidTransaction('Not owner.');
+    if (!entry || entry.length === 0 || signer !== decode(entry).asset.owner.public_key) throw new InvalidTransaction('Not owner.');
 }
 const verifyExistance = (entry) => {
     if (!entry || entry.length === 0) throw new InvalidTransaction('Asset does not exist.');
@@ -44,18 +50,17 @@ const create = (state, name, owner, status, date) => {
         // Verify address is available.
         verifyAvailability(entry);
         // Construct data.
-        let data = { [assetAddress]: encode({ 'name': name, 'owner': owner, 'date': date, 'status': status }) };
-        console.log(data);
+        let data = { [assetAddress]: encode({ asset: { 'name': name, 'date': date, 'status': status, 'owner': owner } }) };
         // Update state.
         return state.set(data);
     });
 }
 
 // Propose transfer to state.
-const propose = (state, asset, target, signer, status, date) => {
+const propose = (state, asset, owner, target, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
-    const assetAddress = getAssetAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
+    const assetAddress = getAssetAddress(asset.name);
     return state.get([assetAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[assetAddress];
@@ -63,17 +68,17 @@ const propose = (state, asset, target, signer, status, date) => {
         verifyExistance(entry);
         verifyOwnership(signer, entry);
         // Construct data.
-        let data = { [transferAddress]: encode({ 'name': asset, 'owner': signer, 'target': target, 'date': date, 'type': 'proposal', 'status': status }) };
+        let data = { [transferAddress]: encode({ transfer: { 'asset': asset, 'owner': owner, 'target': target, 'date': date, 'type': 'proposal', 'status': status } }) };
         // Update state.
         return state.set(data);
     });
 }
 
 // Accept a transfer proposal.
-const acceptProposal = (state, asset, signer, status, date) => {
+const acceptProposal = (state, asset, owner, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
-    const assetAddress = getAssetAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
+    const assetAddress = getAssetAddress(asset.name);
     return state.get([transferAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[transferAddress];
@@ -81,10 +86,12 @@ const acceptProposal = (state, asset, signer, status, date) => {
         verifyExistance(entry);
         verifyTarget(signer, entry);
         // Construct data.
+        asset.owner = owner;
         let data = {
             [transferAddress]: Buffer(0),
-            [assetAddress]: encode({ 'name': asset, 'owner': signer, 'date': date, 'status': status })
+            [assetAddress]: encode({ 'asset': asset, 'owner': owner, 'date': date, 'status': status })
         };
+        console.log(data);
         // Update state.
         return state.set(data);
     });
@@ -93,7 +100,7 @@ const acceptProposal = (state, asset, signer, status, date) => {
 // Reject a transfer proposal.
 const rejectProposal = (state, asset, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
     return state.get([transferAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[transferAddress];
@@ -108,40 +115,38 @@ const rejectProposal = (state, asset, signer, status, date) => {
 }
 
 // Request transfer to state
-const request = (state, asset, target, signer, status, date) => {
+const request = (state, asset, owner, target, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
-    const assetAddress = getAssetAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
+    const assetAddress = getAssetAddress(asset.name);
     return state.get([assetAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[assetAddress];
         // Verify entry exists and ownership is valid.
         verifyExistance(entry);
         // Construct data.
-        let data = { [transferAddress]: encode({ 'name': asset, 'owner': signer, 'target': target, 'date': date, 'type': 'request', 'status': status }) };
+        let data = { [transferAddress]: encode({ transfer: { 'asset': asset, 'owner': owner, 'target': target, 'date': date, 'type': 'request', 'status': status } }) };
         // Update state.
         return state.set(data);
     });
 }
 
 // Accept a transfer request.
-const acceptRequest = (state, asset, signer, status, date) => {
+const acceptRequest = (state, asset, owner, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
-    const assetAddress = getAssetAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
+    const assetAddress = getAssetAddress(asset.name);
     return state.get([transferAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[transferAddress];
         // Verify entry exists and ownership is valid.
         verifyExistance(entry);
         verifyTarget(signer, entry);
-        const requester = decode(entry).owner;
-        console.log('requester');
-        console.log(requester);
         // Construct data.
+        asset.owner = decode(entry).transfer.owner;
         let data = {
             [transferAddress]: Buffer(0),
-            [assetAddress]: encode({ 'name': asset, 'owner': requester, 'date': date, 'status': status })
+            [assetAddress]: encode({ 'asset': asset, 'owner': owner, 'date': date, 'status': status })
         };
         // Update state.
         return state.set(data);
@@ -151,7 +156,7 @@ const acceptRequest = (state, asset, signer, status, date) => {
 // Reject a transfer request.
 const rejectRequest = (state, asset, signer, status, date) => {
     // Get asset and transfer addresses.
-    const transferAddress = getTransferAddress(asset);
+    const transferAddress = getTransferAddress(asset.name);
     return state.get([transferAddress]).then(entries => {
         // Retrieve entry for address.
         const entry = entries[transferAddress];
@@ -168,14 +173,15 @@ const rejectRequest = (state, asset, signer, status, date) => {
 }
 
 // Update asset status in state.
-const updateStatus = (state, asset, signer, status, date) => {
+const updateStatus = (state, asset, owner, signer, status, date) => {
     // Get asset address.
-    const assetAddress = getAssetAddress(asset);
+    const assetAddress = getAssetAddress(asset.name);
     return state.get([assetAddress]).then(entries => {
         const entry = entries[assetAddress];
         verifyExistance(entry);
         verifyOwnership(signer, entry);
-        let data = { [assetAddress]: encode({ 'name': asset, 'owner': signer, 'date': date, 'status': status }) };
+        asset.status = status;
+        let data = { [assetAddress]: encode({ 'asset': asset, 'owner': owner, 'date': date, 'status': status }) };
         return state.set(data);
     });
 }
@@ -194,13 +200,14 @@ class JSONHandler extends TransactionHandler {
         const header = TransactionHeader.decode(txn.header);
         const signer = header.signerPubkey;
         console.log(JSON.parse(txn.payload));
-        const { 
-            action, 
-            asset, 
-            owner, 
-            date, 
-            type, 
-            status 
+        const {
+            action,
+            asset,
+            owner,
+            target,
+            date,
+            type,
+            status
         } = JSON.parse(txn.payload);
         // Distribute to designated function based on payload action.
         console.log(`Handling transaction: ${action} > ${asset}`, owner ? `>${owner.name}...` : '', `:: ${signer.slice(0, 8)}...`);
@@ -210,25 +217,25 @@ class JSONHandler extends TransactionHandler {
                 return create(state, asset, owner, status, date);
                 break;
             case 'propose':
-                return propose(state, asset, owner, signer, status, date);
+                return propose(state, asset, owner, target, signer, status, date);
                 break;
             case 'acceptProposal':
-                return acceptProposal(state, asset, signer, status, date);
+                return acceptProposal(state, asset, owner, signer, status, date);
                 break;
             case 'rejectProposal':
                 return rejectProposal(state, asset, signer, status, date);
                 break;
             case 'request':
-                return request(state, asset, owner, signer, status, date);
+                return request(state, asset, owner, target, signer, status, date);
                 break;
             case 'acceptRequest':
-                return acceptRequest(state, asset, signer, status, date);
+                return acceptRequest(state, asset, owner, signer, status, date);
                 break;
             case 'rejectRequest':
                 return rejectRequest(state, asset, signer, status, date);
                 break;
             case 'status':
-                return updateStatus(state, asset, signer, status, date);
+                return updateStatus(state, asset, owner, signer, status, date);
                 break;
             default:
                 return Promise.resolve().then(() => { throw new InvalidTransaction('Wrong action provided: ' + action) });

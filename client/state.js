@@ -68,8 +68,8 @@ const getState = (cb) => {
             if (datum.data !== '') {
                 const parsed = JSON.parse(atob(datum.data));
                 // Confirm the subject.
-                if (datum.address[7] === '0') processed.assets.push(parsed);
-                if (datum.address[7] === '1') processed.transfers.push(parsed);
+                if (datum.address[7] === '0') processed.assets.push(parsed.asset);
+                if (datum.address[7] === '1') processed.transfers.push(parsed.transfer);
             }
             return processed;
         }, { assets: [], transfers: [] }));

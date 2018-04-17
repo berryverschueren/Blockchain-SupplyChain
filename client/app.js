@@ -13,6 +13,8 @@ const concatNewOwners = (existing, ownerContainers) => {
     return existing.concat(ownerContainers.filter(({ owner }) => !existing.includes(owner)).map(({ owner }) => owner));
 }
 
+const isObject = (obj) => obj === Object(obj);
+
 // Configuration variables.
 const KEY_NAME = 'berry-chain.keys',
     API_URL = REST_API_PROXY, //'http://localhost:3000/api',
@@ -51,17 +53,23 @@ const readableAddress = (address) => {
 app.loadTransactionHistory = function () {
     console.log('Loading transaction history..');
     $.get(`${API_URL}/transactions`, ({ data }) => {
-        console.log(data);
         if (data && data.length) {
             clearInput('#tbl_history');
             for (let i = 0; i < data.length; i++) {
                 const transaction = data[i];
                 if (transaction['header']['payload_encoding'] === 'application/json') {
-                    let pbk = readableAddress(transaction['header']['batcher_pubkey']);
                     let spk = readableAddress(transaction['header']['signer_pubkey']);
                     const payload = JSON.parse(atob(transaction['payload']));
                     //addRow('#tbl_history', pbk, spk, payload['action'], payload['asset'], readableAddress(payload['owner']), payload['status'], payload['date']);
-                    addRow('#tbl_history', payload['asset'], payload['status'], readableAddress(payload['owner']), payload['type'], payload['action'], payload['date'], pbk, spk);
+                    addRow('#tbl_history', 
+                    isObject(payload['asset']) ? payload['asset']['name'] : payload['asset'], 
+                    payload['status'], 
+                    readableAddress(payload['owner']['public_key']), 
+                    payload['type'], 
+                    payload['action'], 
+                    payload['date'], 
+                    payload['owner']['name'], 
+                    spk);
                 }
             }
         }
@@ -76,15 +84,19 @@ app.refresh = function () {
         this.assets = assets;
         this.transfers = transfers;
 
+        console.log('assets');
+        console.log(assets);
+        console.log('transfers');
+        console.log(transfers);
+
         // Clear current views.
         this.clearViews();
-
         // Repopulate existing views.
         assets.forEach(asset => {
             // Add to tbl_allAssets.
-            addRow('#tbl_allAssets', asset.name, asset.status, readableAddress(asset.owner));
+            addRow('#tbl_allAssets', asset.name, asset.status, asset.owner.name);
             // Add to tbl_yourAssets & sel_proposalAsset & sel_statusAsset if owner === user.
-            if (this.user && asset.owner === this.user.public) {
+            if (this.user && asset.owner.public_key === this.user.public_key) {
                 addRow('#tbl_yourAssets', asset.name, asset.status);
                 addOption('[name="sel_proposalAsset"]', asset.name, asset.name);
                 addOption('[name="sel_statusAsset"]', asset.name, asset.name);
@@ -93,10 +105,10 @@ app.refresh = function () {
         });
 
         // Filter transfers to find owned transfers and create accept/reject entries for each of them.
-        transfers.filter(transfer => transfer.target === this.user.public && transfer.type === 'proposal')
-            .forEach(transfer => addAction('#lst_yourProposals', transfer.name, 'Accept'));
-        transfers.filter(transfer => transfer.target === this.user.public && transfer.type === 'request')
-            .forEach(transfer => addAction('#lst_yourRequests', transfer.name, 'Accept'));
+        transfers.filter(transfer => transfer.target.public_key === this.user.public_key && transfer.type === 'proposal')
+            .forEach(transfer => addAction('#lst_yourProposals', transfer.asset.name, 'Accept'));
+        transfers.filter(transfer => transfer.target.public_key === this.user.public_key && transfer.type === 'request')
+            .forEach(transfer => addAction('#lst_yourRequests', transfer.asset.name, 'Accept'));
 
         // Retrieve all possible public keys.
         let pubKeys = this.users.map(pair => pair.public);
@@ -137,16 +149,21 @@ $('#btn_newUser').on('click', function () {
     // Verify values.
     if (newUsername && newAddress) {
         console.log('Creating new user: ' + newUsername + ', ' + newAddress);
-        const keyPair = makeKeyPair();
-        app.user = {
-            name: newUsername,
-            public_key: keyPair.public,
-            private_key: keyPair.private,
-            address: newAddress
+        const alreadyExists = app.users.find(user => user.name === newUsername);
+        if (!alreadyExists) { 
+            const keyPair = makeKeyPair();
+            app.user = {
+                name: newUsername,
+                public_key: keyPair.public,
+                private_key: keyPair.private,
+                address: newAddress
+            }
+            app.users.push(app.user);
+            saveUsers(app.users);
+            addOption('[name="sel_currentUser"]', app.user.public_key, app.user.name);        
+        } else {
+            console.log('Username already exists!');
         }
-        app.users.push(app.user);
-        saveUsers(app.users);
-        addOption('[name="sel_currentUser"]', app.user.public_key, app.user.name);        
     }
     // Clear input fields.
     clearText('#txt_newUsername');
@@ -170,16 +187,19 @@ $('[name="sel_currentUser"]').on('change', function () {
 // Propose button clicked.
 $('#btn_proposeTransfer').on('click', function () {
     // Retrieve selected values.
-    const asset = $('[name="sel_proposalAsset"]').val();
-    const target = $('[name="sel_proposalTarget"]').val();
+    const assetName = $('[name="sel_proposalAsset"]').val();
+    const targetPublicKey = $('[name="sel_proposalTarget"]').val();
+    const asset = app.assets.find(asset => asset.name === assetName);
+    const target = app.users.find(user => user.public_key === targetPublicKey);
     // Verify values.
     if (asset && target) {
-        console.log('Proposing transfer of: ' + asset + ', to: ' + readableAddress(target));
+        console.log('Proposing transfer of: ' + asset.name + ', to: ' + target.name);
         // Construct payload.
         let data = {
             'action': 'propose',
             'asset': asset,
-            'owner': target,
+            'owner': app.user,
+            'target': target,
             'status': 'Transfer proposed!'
         };
         // Submit payload.
@@ -196,7 +216,7 @@ $('[name="sel_requestTarget"]').on('change', function () {
         // Repopulate request assets.
         app.assets.forEach(asset => {
             // Verify ownership.
-            if (asset.owner === this.value) {
+            if (asset.owner.public_key === this.value) {
                 addOption('[name="sel_requestAsset"]', asset.name, asset.name);
             }
         });
@@ -217,16 +237,19 @@ $('[name="sel_assetDetails"]').on('change', function () {
 // Request button clicked.
 $('#btn_requestTransfer').on('click', function () {
     // Retrieve selected values.
-    const target = $('[name="sel_requestTarget"]').val();
-    const asset = $('[name="sel_requestAsset"]').val();
+    const targetPublicKey = $('[name="sel_requestTarget"]').val();
+    const assetName = $('[name="sel_requestAsset"]').val();
+    const target = app.users.find(user => user.public_key === targetPublicKey);
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values.
     if (asset && target) {
-        console.log('Requesting transfer of: ' + asset + ', from: ' + readableAddress(target));
+        console.log('Requesting transfer of: ' + asset.name + ', from: ' + target.name);
         // Construct payload.
         let data = {
             'action': 'request',
             'asset': asset,
-            'owner': target,
+            'owner': app.user,
+            'target': target,
             'status': 'Transfer requested!'
         };
         // Submit payload.
@@ -237,19 +260,22 @@ $('#btn_requestTransfer').on('click', function () {
 // Create button clicked.
 $('#btn_createAsset').on('click', function () {
     // Retrieve input value.
-    const asset = $('#txt_assetName').val();
+    const assetName = $('#txt_assetName').val();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify value and current user.
-    if (asset && app.user) {
-        console.log('Creating asset: ' + asset);
+    if (assetName && !asset && app.user) {
+        console.log('Creating asset: ' + assetName);
         // Construct payload.
         let data = {
             'action': 'create',
-            'asset': asset,
+            'asset': assetName,
             'owner': app.user,
             'status': 'Asset created!'
         };
         // Submit payload.
         app.update(data);
+    } else {
+        console.log('Asset name already exists!');
     }
     // Clear input field.
     clearText('#txt_assetName');
@@ -259,14 +285,15 @@ $('#btn_createAsset').on('click', function () {
 $('#btn_changeStatus').on('click', function () {
     // Retrieve input values.
     const status = $('#txt_status').val();
-    const asset = $('[name="sel_statusAsset"]').val();
+    const assetName = $('[name="sel_statusAsset"]').val();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values and current user.
     if (asset && status && app.user) {
         // Construct payload.
         let data = {
             'action': 'status',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': status
         };
         // Submit payload.
@@ -279,15 +306,16 @@ $('#btn_changeStatus').on('click', function () {
 // Accept proposal.
 $('#lst_yourProposals').on('click', '.accept', function () {
     // Retrieve input values.
-    const asset = $(this).prev().text();
+    const assetName = $(this).prev().text();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values.
-    if (asset && app.user.public) {
-        console.log('Accepting proposal of asset: ' + asset);
+    if (asset && app.user) {
+        console.log('Accepting proposal of asset: ' + asset.name);
         // Construct payload.
         let data = {
             'action': 'acceptProposal',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': 'Accepted proposal!'
         }
         // Submit payload.
@@ -299,35 +327,36 @@ $('#lst_yourProposals').on('click', '.accept', function () {
 $('#lst_yourProposals').on('click', '.reject', function () {
     // Retrieve input values.
     console.log('Reject proposal clicked..');
-    const asset = $(this).prev().prev().text();
-    console.log(asset);
-    console.log(app.user.public);
+    const assetName = $(this).prev().prev().text();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values.
-    if (asset && app.user.public) {
-        console.log('Rejecting proposal of asset: ' + asset);
+    if (asset && app.user) {
+        console.log('Rejecting proposal of asset: ' + asset.name);
         // Construct payload.
         let data = {
             'action': 'rejectProposal',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': 'Rejected proposal!'
         }
         // Submit payload.
         app.update(data);
     }
 });
+
 // Accept proposal.
 $('#lst_yourRequests').on('click', '.accept', function () {
     // Retrieve input values.
-    const asset = $(this).prev().text();
+    const assetName = $(this).prev().text();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values.
-    if (asset && app.user.public) {
-        console.log('Accepting request of asset: ' + asset);
+    if (asset && app.user) {
+        console.log('Accepting request of asset: ' + asset.name);
         // Construct payload.
         let data = {
             'action': 'acceptRequest',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': 'Accepted request!'
         }
         // Submit payload.
@@ -338,15 +367,16 @@ $('#lst_yourRequests').on('click', '.accept', function () {
 // Reject proposal.
 $('#lst_yourRequests').on('click', '.reject', function () {
     // Retrieve input values.
-    const asset = $(this).prev().prev().text();
+    const assetName = $(this).prev().prev().text();
+    const asset = app.assets.find(asset => asset.name === assetName);
     // Verify values.
-    if (asset && app.user.public) {
-        console.log('Rejecting request of asset: ' + asset);
+    if (asset && app.user) {
+        console.log('Rejecting request of asset: ' + asset.name);
         // Construct payload.
         let data = {
             'action': 'rejectRequest',
             'asset': asset,
-            'owner': app.user.public,
+            'owner': app.user,
             'status': 'Rejected request!'
         }
         // Submit payload.
@@ -356,6 +386,5 @@ $('#lst_yourRequests').on('click', '.reject', function () {
 
 // Initialize.
 app.users = getUsers();
-console.log(app.users);
 app.users.forEach(user => addOption('[name="sel_currentUser"]', user.public_key, user.name));
 app.refresh();
