@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,129 +11,102 @@
     <!-- jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <!-- Latest compiled JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style>
-        th, td {
-            padding-right: 10px;
+        body { 
+            padding-top: 70px; 
+        }
+        .top-buffer {
+            padding-top: 15px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container-fluid">
-        <div class="col-sm-6">
-            <div class="row">
-                <h3>Create new user</h3>
-                <input id="txt_newUsername" type="text" placeholder="Enter username..">
-                <input id="txt_newAddress" type="text" placeholder="Enter address..">
-                <input id="btn_newUser" type="button" value="Create">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Blockchain & SupplyChain</a>
             </div>
-            <div class="row">
-                <h3>Select current user</h3>
-                <select name="sel_currentUser">
-                    <option value="none" selected>Select public key..</option>
-                </select>
-            </div>
-            <div class="row">
-                <h3>Your assets</h3>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                    </tr>
-                    <tbody id="tbl_yourAssets"></tbody>
-                </table>
-            </div>
-            <div class="row">
-                <h3>Transfer proposal</h3>
-                <select name="sel_proposalAsset">
-                    <option value="none" selected>Select asset..</option>
-                </select>
-                <select name="sel_proposalTarget">
-                    <option value="none" selected>Select target..</option>
-                </select>
-                <input id="btn_proposeTransfer" type="button" value="Propose">
-            </div>
-            <div class="row">
-                <h3>Transfer request</h3>
-                <select name="sel_requestTarget">
-                        <option value="none" selected>Select target..</option>
-                </select>
-                <select name="sel_requestAsset">
-                    <option value="none" selected>Select asset..</option>
-                </select>
-                <input id="btn_requestTransfer" type="button" value="Request">
-            </div>
-            <div class="row">
-                <h3>Accept proposals</h3>
-                <div id="lst_yourProposals"></div>
-            </div>
-            <div class="row">
-                <h3>Accept requests</h3>
-                <div id="lst_yourRequests"></div>
-            </div>
-            <div class="row">
-                <h3>Create asset</h3>
-                <input id="txt_assetName" type="text" placeholder="Enter asset name..">
-                <input id="btn_createAsset" type="button" value="Create">
-            </div>
-            <div class="row">
-                <h3>Change asset status</h3>
-                <select name="sel_statusAsset">
-                    <option value="none">Select asset..</option>
-                </select>
-                <input id="txt_status" type="text" placeholder="Enter status..">
-                <input id="btn_changeStatus" type="button" value="Change">
-            </div>
-            <!-- <div class="row">
-                <h3>Asset details</h3>
-                <select name="sel_assetDetails">
-                    <option value="none">Select asset..</option>
-                </select>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Target</th>
-                        <th>Type</th>
-                        <th>Action</th>
-                        <th>Date</th>
-                        <th>Batcher</th>
-                        <th>Signer</th>
-                    </tr>
-                    <tbody id="tbl_assetDetails"></tbody>
-                </table>
-            </div> -->
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a href="#">Users</a>
+                </li>
+                <li>
+                    <a href="#assets">Assets</a>
+                </li>
+            </ul>
         </div>
-        <div class="col-sm-6">
-            <div class="row">
-                <h3>All assets</h3>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Owner</th>
-                    </tr>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>Select existing user</h2>
+            </div>
+            <div class="col-md-7">
+                <h2>Create new user</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label for="sel_currentUser">
+                        Username
+                    </label>
+                    <select name="sel_currentUser" class="form-control">
+                        <option value="none" selected>Select username..</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="mb-3">
+                    <label for="txt_newUsername">
+                        Username
+                    </label>
+                    <input id="txt_newUsername" class="form-control" placeholder="Username" type="text">
+                </div>
+                <div class="mb-3 top-buffer">
+                    <label for="txt_newAddress">
+                        Address
+                    </label>
+                    <input id="txt_newAddress" class="form-control" placeholder="Straat 123, 1234 AB, Stad" type="text">
+                </div>
+                <div class="md-3 top-buffer">
+                    <input id="btn_newUser" class="btn btn-primary btn-lg" type="button" value="Create">
+                </div>
+            </div>
+        </div>
+        <hr id="assets" class="mb-4">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>Create an asset</h2>
+                <div class="mb-3">
+                    <label for="txt_assetName">
+                        Asset name
+                    </label>
+                    <input id="txt_assetName" class="form-control" placeholder="Asset 1" type="text">
+                </div>
+                <div class="mb-3 top-buffer">
+                    <input id="btn_createAsset" class="btn btn-primary btn-lg" type="button" value="Create">
+                </div>
+            </div>
+            <div class="col-md-7">
+                <h2>All assets</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Owner</th>
+                        </tr>
+                    </thead>
                     <tbody id="tbl_allAssets"></tbody>
                 </table>
             </div>
-            <div class="row">
-                <h3>History</h3>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Target</th>
-                        <th>Type</th>
-                        <th>Action</th>
-                        <th>Date</th>
-                        <th>Owner</th>
-                        <th>Signer</th>
-                    </tr>
-                    <tbody id="tbl_history"></tbody>
-                </table>
-            </div>
         </div>
+        <hr class="md-4">
     </div>
     <script src="bundle.js"></script>
 </body>
+
 </html>

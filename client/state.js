@@ -1,37 +1,21 @@
 'use strict'
 
-const { createHash } = require('crypto');
+// Imports.
 const $ = require('jquery');
 const { signer, BatchEncoder, TransactionEncoder } = require('sawtooth-sdk-client');
-const { REST_API_PROXY } = require('./config');
+const { REST_API_PROXY, KEY_NAME, FAMILY, VERSION, PREFIX } = require('./config');
 
-// Encoding helper
-const getAddress = (key, length = 64) => createHash('sha512').update(key).digest('hex').slice(0, length);
-
-// Configuration variables.
-const KEY_NAME = 'berry-chain.keys',
-    API_URL = REST_API_PROXY,// 'http://localhost:3000/api',
-    FAMILY = 'berry-chain',
-    VERSION = '0.0',
-    PREFIX = getAddress(FAMILY, 6);
-
-// Fetch key-pairs from localStorage.
+// Function: Load users from localStorage of the browser.
 const getUsers = () => {
-    // const storedKeys = localStorage.getItem(KEY_NAME);
-    // // Verify key-pairs exist.
-    // if (!storedKeys) return [];
-    // // Split and return key-pairs.
-    // return storedKeys.split(';').map((pair) => {
-    //     const separated = pair.split(',');
-    //     return {
-    //         public: separated[0],
-    //         private: separated[1]
-    //     };
-    // });
+    // Get data from localStorage.
     const storedUsers = localStorage.getItem(KEY_NAME);
+    // If there is no data, return an empty array.
     if (!storedUsers) return [];
+    // Otherwise split the data into userProperties using the delimiter ';;'.
     return storedUsers.split(';;').map((userProperties) => {
+        // Further split the userProperties into users using the delimiter '||'.
         const user = userProperties.split('||');
+        // Return proper json objects.
         return {
             name: user[0],
             public_key: user[1],
@@ -41,58 +25,68 @@ const getUsers = () => {
     });
 }
 
-// Create new key-pair.
+// Function: Create a new key pair.
 const makeKeyPair = () => {
+    // Generate a private key.
     const privKey = signer.makePrivateKey();
+    // Return proper json.
     return {
+        // Generate public key based on private key.
         public: signer.getPublicKey(privKey),
         private: privKey
     };
 }
 
-// Save key-pairs to localStorage.
+// Function: Save users to localStorage of the browser.
 const saveUsers = (users) => {
-    // // Join keys into pairs.
-    // const paired = keys.map(pair => [pair.public, pair.private].join(','));
-    // // Join pairs into key-pair string and save to localStorage.
-    // localStorage.setItem(KEY_NAME, paired.join(';'));
+    // Combine user json object properties delimited by '||'.
     const paired = users.map(user => [user.name, user.public_key, user.private_key, user.address].join('||'));
+    // Combine the total user strings delimited by ';;'.
+    // And save to localStorage.
     localStorage.setItem(KEY_NAME, paired.join(';;'));
 }
 
-// Fetch current berry-chain state from the validator.
+// Function: Fetch the current state of the ledger from the validator.
 const getState = (cb) => {
-    // Call the validator API.
-    $.get(`${API_URL}/state?address=${PREFIX}`, ({ data }) => {
+    // Use the provided API to retrieve the data.
+    $.get(`${REST_API_PROXY}/state?address=${PREFIX}`, ({ data }) => {
+        // Reduce the amount of data to process.
         cb(data.reduce((processed, datum) => {
+            // Verify there is data at all.
             if (datum.data !== '') {
+                // Decode the base64 encoded data.
                 const parsed = JSON.parse(atob(datum.data));
-                // Confirm the subject.
+                // Confirm the subject using the prefixed addresses.
                 if (datum.address[7] === '0') processed.assets.push(parsed.asset);
-                if (datum.address[7] === '1') processed.transfers.push(parsed.transfer);
             }
+            // Return processed data.
             return processed;
-        }, { assets: [], transfers: [] }));
+        }, { assets: [] }));
     });
 }
 
-// Submit signed transaction to the validator.
+// Function: Submit a signed transaction to the validator.
 const submitUpdate = (payload, privKey, cb) => {
+    // Construct a transaction.
     const txn = new TransactionEncoder(privKey, {
         inputs: [PREFIX],
         outputs: [PREFIX],
         familyName: FAMILY,
         familyVersion: VERSION,
+        // Encode payload using json encoding.
         payloadEncoding: 'application/json',
         payloadEncoder: p => Buffer.from(JSON.stringify(p))
     }).create(payload);
+    // Encode entire transaction using base64 encoding.
     const batchBytes = new BatchEncoder(privKey).createEncoded(txn);
+    // Post the constructed batch using the provided API.    
     $.post({
-        url: `${API_URL}/batches?wait`,
+        url: `${REST_API_PROXY}/batches?wait`,
         data: batchBytes,
         headers: { 'Content-Type': 'application/octet-stream' },
         processData: false,
         dataType: 'json',
+        // Handle the callback of the post call.
         success: function () {
             cb(true)
         },
@@ -102,6 +96,7 @@ const submitUpdate = (payload, privKey, cb) => {
     });
 }
 
+// Exports: Functions.
 module.exports = {
     getUsers,
     makeKeyPair,
