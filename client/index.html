@@ -13,9 +13,10 @@
     <!-- Latest compiled JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style>
-        body { 
-            padding-top: 70px; 
+        body {
+            padding-top: 70px;
         }
+
         .top-buffer {
             padding-top: 15px;
         }
@@ -35,20 +36,16 @@
                 <li>
                     <a href="#assets">Assets</a>
                 </li>
+                <li>
+                    <a href="#requests">Requests</a>
+                </li>
             </ul>
         </div>
     </nav>
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <h2>Select existing user</h2>
-            </div>
-            <div class="col-md-7">
-                <h2>Create new user</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-5">
                 <div class="mb-3">
                     <label for="sel_currentUser">
                         Username
@@ -58,7 +55,20 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-7">
+            <div class="col-md-4">
+                <h2>Create an asset</h2>
+                <div class="mb-3">
+                    <label for="txt_assetName">
+                        Asset name
+                    </label>
+                    <input id="txt_assetName" class="form-control" placeholder="Asset 1" type="text">
+                </div>
+                <div class="mb-3 top-buffer">
+                    <input id="btn_createAsset" class="btn btn-primary btn-lg" type="button" value="Create">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>Create new user</h2>
                 <div class="mb-3">
                     <label for="txt_newUsername">
                         Username
@@ -76,21 +86,9 @@
                 </div>
             </div>
         </div>
-        <hr id="assets" class="mb-4">
+        <hr id="assets" class="mb-4 top-buffer">
         <div class="row">
-            <div class="col-md-5">
-                <h2>Create an asset</h2>
-                <div class="mb-3">
-                    <label for="txt_assetName">
-                        Asset name
-                    </label>
-                    <input id="txt_assetName" class="form-control" placeholder="Asset 1" type="text">
-                </div>
-                <div class="mb-3 top-buffer">
-                    <input id="btn_createAsset" class="btn btn-primary btn-lg" type="button" value="Create">
-                </div>
-            </div>
-            <div class="col-md-7">
+            <div class="col-md-4">
                 <h2>All assets</h2>
                 <table class="table table-striped">
                     <thead>
@@ -103,8 +101,85 @@
                     <tbody id="tbl_allAssets"></tbody>
                 </table>
             </div>
+            <div class="col-md-4">
+                <h2>Select other user</h2>
+                <div class="mb-3">
+                    <label for="sel_otherUser">
+                        Username
+                    </label>
+                    <select name="sel_otherUser" class="form-control">
+                        <option value="none" selected>Select username..</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>Other user's assets</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Owner</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl_otherUsersAssets"></tbody>
+                </table>
+            </div>
         </div>
-        <hr class="md-4">
+        <hr id="requests" class="mb-4 top-buffer">
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Request other user's asset</h2>
+                <div class="mb-3">
+                    <label for="sel_requestTarget">
+                        Asset
+                    </label>
+                    <select name="sel_requestTarget" class="form-control">
+                        <option value="none" selected>Select asset..</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>Incoming requests</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Owner</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl_incomingRequests"></tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <h2>Accept/ Reject request</h2>
+            </div>
+        </div>
+        <hr id="status" class="mb-4 top-buffer">
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Update asset status</h2>
+                <div class="mb-3">
+                    <label for="sel_assetStatus">
+                        Asset
+                    </label>
+                    <select name="sel_assetStatus" class="form-control">
+                        <option value="none" selected>Select asset..</option>
+                    </select>
+                </div>
+                <div class="mb-3 top-buffer">
+                    <label for="txt_assetStatus">
+                        Asset status
+                    </label>
+                    <input id="txt_assetStatus" class="form-control" placeholder="New asset status" type="text">
+                </div>
+                <div class="mb-3 top-buffer">
+                    <input id="btn_assetStatus" class="btn btn-primary btn-lg" type="button" value="Update">
+                </div>
+            </div>
+        </div>
+        <hr class="mb-4 top-buffer">
     </div>
     <script src="bundle.js"></script>
 </body>
