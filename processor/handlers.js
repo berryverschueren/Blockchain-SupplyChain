@@ -9,15 +9,32 @@ const { FAMILY, PREFIX, getAddress } = require('./config');
 // Function: Prefix all asset addresses with 00.
 const getAssetAddress = (name) => PREFIX + '00' + getAddress(name, 62);
 
+// Function: Prefix all request addresses with 01.
+const getRequestAddress = (name) => PREFIX + '01' + getAddress(name, 62);
+
 // Function: Encode the given object using json encoding.
 const encode = (obj) => Buffer.from(JSON.stringify(obj));
 
 // Function: Decode the given buffer using json decoding.
 const decode = (buf) => JSON.parse(buf.toString());
 
-// Function: Verify the availability of an asset address.
-const verifyAvailability = (entry) => {
-    if (entry && entry.length > 0) throw new InvalidTransaction('Asset name in use.');
+// Function: Verify the availability of an entry.
+const verifyEntryAvailability = (entry) => {
+    if (entry && entry.length > 0) throw new InvalidTransaction('Entry availability test failed.');
+}
+
+const verifyEntryExistance = (entry) => {
+    if (!entry || entry.length === 0) throw new InvalidTransaction('Entry existance test failed.');
+}
+
+// Function: Verify the ownership of an asset entry.
+const verifyAssetOwnership = (entry, owner) => {
+    if (entry && entry.length > 0) {
+        const decodedEntry = decode(entry);
+        if (!decodedEntry || !decodedEntry.asset || !decodedEntry.asset.owner || !decodedEntry.asset.owner.name || decodedEntry.asset.owner.name !== owner.name) {
+            throw new InvalidTransaction('Asset entry ownership test failed.');
+        }
+    }
 }
 
 // Function: Create an asset and submit the payload to te ledger.
@@ -28,9 +45,33 @@ const create = (state, name, owner, status, date) => {
     return state.get([assetAddress]).then(entries => {
         // Verify the entry is not taken and the address is available.
         const entry = entries[assetAddress];
-        verifyAvailability(entry);
+        verifyEntryAvailability(entry);
         // Construct data.
         let data = { [assetAddress]: encode({ asset: { 'name': name, 'date': date, 'status': status, 'owner': owner } }) };
+        // Update ledger.
+        return state.set(data);
+    });
+}
+
+// Function: Create a request and submit the payload to the ledger.
+const request = (state, asset, owner, target, status, date) => {
+    // Get the asset address.
+    const assetAddress = getAssetAddress(asset.name);
+    // Get the request address.
+    const requestAddress = getRequestAddress(asset.name);
+    // Get the entry in the ledger for the given address.
+    return state.get([requestAddress, assetAddress]).then(entries => {
+        // Verify the entry is not taken and the address is available.
+        const requestEntry = entries[requestAddress];
+        verifyEntryAvailability(requestEntry);
+        // Verify there is an entry and it's owned by the owner.
+        const assetEntry = entries[assetAddress];
+        verifyEntryExistance(assetEntry);
+        verifyAssetOwnership(assetEntry, owner);
+        // Construct data.
+        let data = {
+            [requestAddress]: encode({ request: { 'asset': asset, 'owner': owner, 'target': target, 'status': status, 'date': date } })
+        };
         // Update ledger.
         return state.set(data);
     });
@@ -53,6 +94,9 @@ class JSONHandler extends TransactionHandler {
         switch (action) {
             case 'create':
                 return create(state, asset, owner, status, date);
+                break;
+            case 'request':
+                return request(state, asset, owner, target, status, date);
                 break;
             default:
                 return Promise.resolve().then(() => { throw new InvalidTransaction('Wrong action provided: ' + action) });

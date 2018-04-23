@@ -58,10 +58,11 @@ const getState = (cb) => {
                 const parsed = JSON.parse(atob(datum.data));
                 // Confirm the subject using the prefixed addresses.
                 if (datum.address[7] === '0') processed.assets.push(parsed.asset);
+                if (datum.address[7] === '1') processed.requests.push(parsed.request);
             }
             // Return processed data.
             return processed;
-        }, { assets: [] }));
+        }, { assets: [], requests: [] }));
     });
 }
 
