@@ -20,6 +20,14 @@
         .top-buffer {
             padding-top: 15px;
         }
+
+        .no-left-buffer {
+            padding-left: 0 !important;
+        }
+
+        .right-buffer {
+            padding-right: 15px;
+        }
     </style>
 </head>
 
@@ -147,9 +155,9 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Owner</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>For</th>
                         </tr>
                     </thead>
                     <tbody id="tbl_incomingRequests"></tbody>
@@ -157,12 +165,20 @@
             </div>
             <div class="col-md-4">
                 <h2>Accept/ Reject request</h2>
-                <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="sel_incomingRequests">
+                        Request
+                    </label>
+                    <select name="sel_incomingRequests" class="form-control">
+                        <option value="none" selected>Select request..</option>
+                    </select>
+                </div>
+                <div class="col-md-2 no-left-buffer">
                     <div class="md-3 top-buffer">
                         <input id="btn_acceptRequest" class="btn btn-primary btn-lg" type="button" value="Accept">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="md-3 top-buffer">
                         <input id="btn_rejectRequest" class="btn btn-primary btn-lg" type="button" value="Reject">
                     </div>

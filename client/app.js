@@ -16,6 +16,7 @@ app.clearViews = function () {
     clearInput('#tbl_allAssets');
     clearOptions('[name="sel_requestTarget"]');
     clearInput('#tbl_incomingRequests');
+    clearOptions('[name="sel_incomingRequests"]');
     clearOptions('[name="sel_assetStatus"]');
     clearText('#txt_assetStatus');
 }
@@ -38,16 +39,23 @@ app.refresh = function () {
             }
         });
         if (this.user) {
-            // TODO: load incoming requests and add table row entries.
-            console.log(this.requests);
+            // Clear application views.
+            clearInput('#tbl_incomingRequests');
+            this.requests.forEach(request => {
+                if (request.target.name === this.user.name) {
+                    // Add an entry to the application view.
+                    addRow('#tbl_incomingRequests', request.owner.name, request.target.name, request.asset.name);
+                    addOption('[name="sel_incomingRequests"]', request.asset.name, request.owner.name + ' => ' + request.asset.name);
+                }
+            })
         }
         if (this.otherUser) {
             // Verify selection.
             if (this.otherUser) {
+                // Clear application views.
+                clearInput('#tbl_otherUsersAssets');
+                clearOptions('[name="sel_requestTarget"]');
                 this.assets.forEach(asset => {
-                    // Clear application views.
-                    clearInput('#tbl_otherUsersAssets');
-                    clearOptions('[name="sel_requestTarget"]');
                     if (asset.owner.name === this.otherUser.name) {
                         // Add an entry to the application view.
                         addRow('#tbl_otherUsersAssets', asset.name, asset.status, asset.owner.name);
@@ -189,6 +197,69 @@ $('#btn_requestTarget').on('click', function () {
             'owner': app.user,
             'target': app.otherUser,
             'status': 'Transfer requested!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_acceptRequest.
+$('#btn_acceptRequest').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_incomingRequests"]').val();
+    const request = app.requests.find(request => request.asset.name === assetName && request.target.name === app.user.name);
+    // Verify values.
+    if (request && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'acceptRequest',
+            'asset': request.asset,
+            'owner': app.user,
+            'target': request.owner,
+            'status': 'Request accepted!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_rejectRequest.
+$('#btn_rejectRequest').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_incomingRequests"]').val();
+    const request = app.requests.find(request => request.asset.name === assetName && request.target.name === app.user.name);
+    // Verify values.
+    if (request && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'rejectRequest',
+            'asset': request.asset,
+            'owner': app.user,
+            'target': request.owner,
+            'status': 'Request rejected!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_assetStatus.
+$('#btn_assetStatus').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_assetStatus"]').val();
+    const asset = app.assets.find(asset => asset.name === assetName);
+    const newStatus = $('#txt_assetStatus').val();
+    console.log(assetName);
+    console.log(asset);
+    console.log(newStatus);
+    // Verify values.
+    if (asset && newStatus && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'updateStatus',
+            'asset': asset,
+            'owner': app.user,
+            'status': newStatus
         };
         // Submit payload.
         app.update(data);

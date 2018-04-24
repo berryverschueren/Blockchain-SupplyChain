@@ -39,42 +39,130 @@ const verifyAssetOwnership = (entry, owner) => {
 
 // Function: Create an asset and submit the payload to te ledger.
 const create = (state, name, owner, status, date) => {
-    // Get the asset address.
-    const assetAddress = getAssetAddress(name);
-    // Get the entry in the ledger for the given address.
-    return state.get([assetAddress]).then(entries => {
-        // Verify the entry is not taken and the address is available.
-        const entry = entries[assetAddress];
-        verifyEntryAvailability(entry);
-        // Construct data.
-        let data = { [assetAddress]: encode({ asset: { 'name': name, 'date': date, 'status': status, 'owner': owner } }) };
-        // Update ledger.
-        return state.set(data);
-    });
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(name);
+        // Get the entry in the ledger for the given address.
+        return state.get([assetAddress]).then(entries => {
+            // Verify the entry is not taken and the address is available.
+            const entry = entries[assetAddress];
+            verifyEntryAvailability(entry);
+            // Construct data.
+            let data = { [assetAddress]: encode({ 'asset': { 'name': name, 'date': date, 'status': status, 'owner': owner } }) };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.create: ' + err.message);
+    }
 }
 
 // Function: Create a request and submit the payload to the ledger.
 const request = (state, asset, owner, target, status, date) => {
-    // Get the asset address.
-    const assetAddress = getAssetAddress(asset.name);
-    // Get the request address.
-    const requestAddress = getRequestAddress(asset.name);
-    // Get the entry in the ledger for the given address.
-    return state.get([requestAddress, assetAddress]).then(entries => {
-        // Verify the entry is not taken and the address is available.
-        const requestEntry = entries[requestAddress];
-        verifyEntryAvailability(requestEntry);
-        // Verify there is an entry and it's owned by the owner.
-        const assetEntry = entries[assetAddress];
-        verifyEntryExistance(assetEntry);
-        verifyAssetOwnership(assetEntry, owner);
-        // Construct data.
-        let data = {
-            [requestAddress]: encode({ request: { 'asset': asset, 'owner': owner, 'target': target, 'status': status, 'date': date } })
-        };
-        // Update ledger.
-        return state.set(data);
-    });
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the request address.
+        const requestAddress = getRequestAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([requestAddress, assetAddress]).then(entries => {
+            // Verify the entry is not taken and the address is available.
+            const requestEntry = entries[requestAddress];
+            verifyEntryAvailability(requestEntry);
+            // Verify there is an entry and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, target);
+            // Construct data.
+            let data = {
+                [requestAddress]: encode({ 'request': { 'asset': asset, 'owner': owner, 'target': target, 'status': status, 'date': date } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.request: ' + err.message);
+    }
+}
+
+// Function: Accept a request and submit the payload to the ledger.
+const acceptRequest = (state, asset, owner, target, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the request address.
+        const requestAddress = getRequestAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([assetAddress, requestAddress]).then(entries => {
+            // Verify the request entry exists.
+            const requestEntry = entries[requestAddress];
+            verifyEntryExistance(requestEntry);
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [requestAddress]: Buffer(0),
+                [assetAddress]: encode({ 'asset': { 'name': asset.name, 'date': date, 'status': status, 'owner': target } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.acceptRequest: ' + err.message);
+    }
+}
+
+// Function: Reject a request and submit the payload to the ledger.
+const rejectRequest = (state, asset, owner, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the request address.
+        const requestAddress = getRequestAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([assetAddress, requestAddress]).then(entries => {
+            // Verify the request entry exists.
+            const requestEntry = entries[requestAddress];
+            verifyEntryExistance(requestEntry);
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [requestAddress]: Buffer(0)
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.rejectRequest: ' + err.message);
+    }
+}
+
+// Function: Update an asset's status and submit the payload to the ledger.
+const updateStatus = (state, asset, owner, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the entry in the leger for the given address.
+        return state.get([assetAddress]).then(entries => {
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [assetAddress]: encode({ 'asset': { 'name': asset.name, 'date': date, 'status': status, 'owner': owner } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.updateStatus: ' + err.message);
+    }
 }
 
 // Class: Definition for transaction handler.
@@ -97,6 +185,15 @@ class JSONHandler extends TransactionHandler {
                 break;
             case 'request':
                 return request(state, asset, owner, target, status, date);
+                break;
+            case 'acceptRequest':
+                return acceptRequest(state, asset, owner, target, status, date);
+                break;
+            case 'rejectRequest':
+                return rejectRequest(state, asset, owner, status, date);
+                break;
+            case 'updateStatus':
+                return updateStatus(state, asset, owner, status, date);
                 break;
             default:
                 return Promise.resolve().then(() => { throw new InvalidTransaction('Wrong action provided: ' + action) });
