@@ -23,6 +23,7 @@ const verifyEntryAvailability = (entry) => {
     if (entry && entry.length > 0) throw new InvalidTransaction('Entry availability test failed.');
 }
 
+// Function: Verify the existance of an entry.
 const verifyEntryExistance = (entry) => {
     if (!entry || entry.length === 0) throw new InvalidTransaction('Entry existance test failed.');
 }
