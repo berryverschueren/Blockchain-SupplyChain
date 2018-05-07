@@ -58,10 +58,11 @@ const getState = (cb) => {
                 const parsed = JSON.parse(atob(datum.data));
                 if (datum.address[7] === '0') processed.assets.push(parsed.asset);
                 if (datum.address[7] === '1') processed.requests.push(parsed.request);
+                if (datum.address[7] === '2') processed.transports.push(parsed.transport);
             }
             // Return processed data.
             return processed;
-        }, { assets: [], requests: [] }));
+        }, { assets: [], requests: [], transports: [] }));
     });
 }
 

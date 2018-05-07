@@ -12,6 +12,9 @@ const getAssetAddress = (name) => PREFIX + '00' + getAddress(name, 62);
 // Function: Prefix all request addresses with 01.
 const getRequestAddress = (name) => PREFIX + '01' + getAddress(name, 62);
 
+// Function: Prefix all transport addresses with 02.
+const getTransportAddress = (name) => PREFIX + '02' + getAddress(name, 62);
+
 // Function: Encode the given object using json encoding.
 const encode = (obj) => Buffer.from(JSON.stringify(obj));
 
@@ -166,6 +169,34 @@ const updateStatus = (state, asset, owner, status, date) => {
     }
 }
 
+// Function: Create a transport request and submit the payload to the ledger.
+const requestTransport = (state, asset, owner, target, transporter, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the transport address.
+        const transportAddress = getTransportAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([transportAddress, assetAddress]).then(entries => {
+            // Verify the entry is not taken and the address is available.
+            const transportEntry = entries[transportAddress];
+            verifyEntryAvailability(transportEntry);
+            // Verify there is an entry and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [transportAddress]: encode({ 'transport': { 'asset': asset, 'owner': owner, 'target': target, 'transporter': transporter, 'status': status, 'date': date } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.requestTransport: ' + err.message);
+    }
+}
+
 // Class: Definition for transaction handler.
 class JSONHandler extends TransactionHandler {
     // Constructor: Use base constructor definition to setup the class.
@@ -178,7 +209,7 @@ class JSONHandler extends TransactionHandler {
         // Parse the transaction header and payload.
         const header = TransactionHeader.decode(txn.header);
         const signer = header.signerPubkey;
-        const { action, asset, owner, target, date, type, status } = JSON.parse(txn.payload);
+        const { action, asset, owner, target, transporter, date, type, status } = JSON.parse(txn.payload);
         // Redirect the payload to the correct function based on the given action.
         switch (action) {
             case 'create':
@@ -196,6 +227,8 @@ class JSONHandler extends TransactionHandler {
             case 'updateStatus':
                 return updateStatus(state, asset, owner, status, date);
                 break;
+            case 'requestTransport':
+                return requestTransport(state, asset, owner, target, transporter, status, date);
             default:
                 return Promise.resolve().then(() => { throw new InvalidTransaction('Wrong action provided: ' + action) });
                 break;

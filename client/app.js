@@ -6,7 +6,7 @@ const { getUsers, makeKeyPair, saveUsers, getState, submitUpdate } = require('./
 const { addOption, addRow, clearInput, clearText, clearOptions } = require('./components');
 
 // Object: Application cache.
-const app = { user: null, otherUser: null, users: [], assets: [], requests: [] }
+const app = { user: null, otherUser: null, users: [], assets: [], requests: [], transports: [] }
 
 // Function: Clear application views.
 app.clearViews = function () {
@@ -19,24 +19,34 @@ app.clearViews = function () {
     clearOptions('[name="sel_incomingRequests"]');
     clearOptions('[name="sel_assetStatus"]');
     clearText('#txt_assetStatus');
+    clearOptions('[name="sel_requestTransport"]');
+    clearInput('#tbl_allTransports');
+    clearOptions('[name="sel_incomingTransportRequests"]');
 }
 
 // Function: Refresh application cache data and views.
 app.refresh = function () {
     // Retrieve current state of the ledger.
-    getState(({ assets, requests }) => {
+    getState(({ assets, requests, transports }) => {
         // Cache the assets found.
         this.assets = assets;
         // Cache the requests found.
         this.requests = requests;
+        // Cache the transports found.
+        this.transports = transports;
         // Repopulate views.
         this.clearViews();
-        assets.forEach(asset => {
+        this.assets.forEach(asset => {
             // Add an entry to the application view.
             addRow('#tbl_allAssets', asset.name, asset.status, asset.owner.name);
             if (this.user && asset.owner.name === this.user.name) {
                 addOption('[name="sel_assetStatus"]', asset.name, asset.name);
+                addOption('[name="sel_requestTransport"]', asset.name, asset.name);
             }
+        });
+        this.transports.forEach(transport => {
+            // Add an entry to the application view.
+            addRow('#tbl_allTransports', transport.owner.name, transport.target.name, transport.transporter.name, transport.asset.name);
         });
         if (this.user) {
             // Clear application views.
@@ -47,7 +57,13 @@ app.refresh = function () {
                     addRow('#tbl_incomingRequests', request.owner.name, request.target.name, request.asset.name);
                     addOption('[name="sel_incomingRequests"]', request.asset.name, request.owner.name + ' => ' + request.asset.name);
                 }
-            })
+            });
+            this.transports.forEach(transport => {
+                if (transport.transporter.name === this.user.name) {
+                    // Add an entry to the application view.
+                    addOption('[name="sel_incomingTransportRequests"]', transport.asset.name, transport.owner.name + ' => ' + transport.asset.name + ' => ' + transport.target.name);
+                }
+            });
         }
         if (this.otherUser) {
             // Verify selection.
@@ -179,6 +195,16 @@ $('[name="sel_otherUser"]').on('change', function () {
         // Change user selection.
         app.otherUser = app.users.find(user => user.public_key === this.value);
     }
+    // Fill sel_transporter with the correct names.
+    if (app.user && app.otherUser) {
+        clearOptions('[name="sel_transporter"]');
+        app.users.forEach(transporter => {
+            // Add all users except for the current user and the other user to the application view.
+            if (transporter.name != app.user.name && transporter.name != app.otherUser.name) {
+                addOption('[name="sel_transporter"]', transporter.public_key, transporter.name);
+            }
+        });
+    }
     // Refresh application.
     app.refresh();
 });
@@ -249,9 +275,6 @@ $('#btn_assetStatus').on('click', function () {
     const assetName = $('[name="sel_assetStatus"]').val();
     const asset = app.assets.find(asset => asset.name === assetName);
     const newStatus = $('#txt_assetStatus').val();
-    console.log(assetName);
-    console.log(asset);
-    console.log(newStatus);
     // Verify values.
     if (asset && newStatus && app.user) {
         // Construct payload.
@@ -260,6 +283,69 @@ $('#btn_assetStatus').on('click', function () {
             'asset': asset,
             'owner': app.user,
             'status': newStatus
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_requestTransport.
+$('#btn_requestTransport').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_requestTransport"]').val();
+    const asset = app.assets.find(asset => asset.name === assetName);
+    const userPubkey = $('[name="sel_transporter"]').val();
+    const transporter = app.users.find(user => user.public_key === userPubkey);
+    // Verify values.
+    if (asset && app.user && app.otherUser && transporter) {
+        // Construct payload.
+        let data = {
+            'action': 'requestTransport',
+            'asset': asset,
+            'owner': app.user,
+            'target': app.otherUser,
+            'transporter': transporter,
+            'status': 'Transport requested!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_acceptTransportRequest.
+$('#btn_acceptTransportRequest').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_incomingTransportRequests"]').val();
+    const transport = app.transports.find(transport => transport.asset.name === assetName && transport.transporter.name === app.user.name);
+    // Verify values.
+    if (transport && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'acceptTransportRequest',
+            'asset': transport.asset,
+            'owner': app.user,
+            'target': transport.target,
+            'status': 'Transport request accepted!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_rejectTransportRequest.
+$('#btn_rejectTransportRequest').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_incomingTransportRequests"]').val();
+    const transport = app.transports.find(transport => transport.asset.name === assetName && transport.transporter.name === app.user.name);
+    // Verify values.
+    if (transport && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'rejectTransportRequest',
+            'asset': transport.asset,
+            'owner': app.user,
+            'target': transport.target,
+            'status': 'Transport request rejected!'
         };
         // Submit payload.
         app.update(data);

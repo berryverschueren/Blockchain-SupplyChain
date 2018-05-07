@@ -47,6 +47,12 @@
                 <li>
                     <a href="#requests">Requests</a>
                 </li>
+                <li>
+                    <a href="#status">Status</a>
+                </li>
+                <li>
+                    <a href="#transport">Transport</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -206,6 +212,69 @@
                 <div class="mb-3 top-buffer">
                     <input id="btn_assetStatus" class="btn btn-primary btn-lg" type="button" value="Update">
                 </div>
+            </div>
+            <div class="col-md-4">
+                <h2>Request transport</h2>
+                <div class="mb-3">
+                    <label for="sel_requestTransport">
+                        Asset
+                    </label>
+                    <select name="sel_requestTransport" class="form-control">
+                        <option value="none" selected>Select asset..</option>
+                    </select>
+                </div>
+                <div class="mb-3 top-buffer">
+                    <label for="sel_transporter">
+                        Transporter
+                    </label>
+                    <select name="sel_transporter" class="form-control">
+                        <option value="none" selected>Select transporter..</option>
+                    </select>
+                </div>
+                <div class="md-3 top-buffer">
+                    <input id="btn_requestTransport" class="btn btn-primary btn-lg" type="button" value="Request">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>All transports</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>By</th>
+                            <th>For</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl_allTransports"></tbody>
+                </table>
+            </div>
+        </div>
+        <hr id="transport" class="mb-4 top-buffer">
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Accept/ Reject transport</h2>
+                <div class="mb-3">
+                    <label for="sel_incomingTransportRequests">
+                        Request
+                    </label>
+                    <select name="sel_incomingTransportRequests" class="form-control">
+                        <option value="none" selected>Select transport request..</option>
+                    </select>
+                </div>
+                <div class="col-md-2 no-left-buffer">
+                    <div class="md-3 top-buffer">
+                        <input id="btn_acceptTransportRequest" class="btn btn-primary btn-lg" type="button" value="Accept">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="md-3 top-buffer">
+                        <input id="btn_rejectTransportRequest" class="btn btn-primary btn-lg" type="button" value="Reject">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>Finish transport</h2>
             </div>
         </div>
         <hr class="mb-4 top-buffer">
