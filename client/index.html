@@ -244,6 +244,7 @@
                             <th>To</th>
                             <th>By</th>
                             <th>For</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="tbl_allTransports"></tbody>
@@ -274,7 +275,18 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <h2>Finish transport</h2>
+                <h2>Finalize transport</h2>
+                <div class="mb-3">
+                    <label for="sel_currentTransports">
+                        Request
+                    </label>
+                    <select name="sel_currentTransports" class="form-control">
+                        <option value="none" selected>Select transport..</option>
+                    </select>
+                </div>
+                <div class="md-3 top-buffer">
+                    <input id="btn_finalizeTransport" class="btn btn-primary btn-lg" type="button" value="Finalize">
+                </div>
             </div>
         </div>
         <hr class="mb-4 top-buffer">

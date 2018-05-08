@@ -197,6 +197,91 @@ const requestTransport = (state, asset, owner, target, transporter, status, date
     }
 }
 
+// Function: Accept a transport request and submit the payload to the ledger.
+const acceptTransportRequest = (state, asset, owner, target, transporter, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the transport address.
+        const transportAddress = getTransportAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([assetAddress, transportAddress]).then(entries => {
+            // Verify the transport entry exists.
+            const transportEntry = entries[transportAddress];
+            verifyEntryExistance(transportEntry);
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [transportAddress]: encode ({ 'transport': { 'asset': asset, 'owner': owner, 'target': target, 'transporter': transporter, 'status': status, 'date': date } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.acceptTransportRequest: ' + err.message);
+    }
+}
+
+// Function: Reject a transport request and submit the payload to the ledger.
+const rejectTransportRequest = (state, asset, owner, target, transporter, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the transport address.
+        const transportAddress = getTransportAddress(asset.name);
+        // Get the entry in the ledger for the given addresses.
+        return state.get([assetAddress, transportAddress]).then(entries => {
+            // Verify the transport entry exists.
+            const transportEntry = entries[transportAddress];
+            verifyEntryExistance(transportEntry);
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [transportAddress]: Buffer(0)
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.acceptTransportRequest: ' + err.message);
+    }
+}
+
+// Function: Finalize a transport and submit the payload to the ledger.
+const finalizeTransport = (state, asset, owner, target, transporter, status, date) => {
+    try {
+        // Get the asset address.
+        const assetAddress = getAssetAddress(asset.name);
+        // Get the transport address.
+        const transportAddress = getTransportAddress(asset.name);
+        // Get the entry in the leger for the given address.
+        return state.get([assetAddress, transportAddress]).then(entries => {
+            // Verify the transport entry exists.
+            const transportEntry = entries[transportAddress];
+            verifyEntryExistance(transportEntry);
+            // Verify the asset entry exists and it's owned by the owner.
+            const assetEntry = entries[assetAddress];
+            verifyEntryExistance(assetEntry);
+            verifyAssetOwnership(assetEntry, owner);
+            // Construct data.
+            let data = {
+                [transportAddress]: Buffer(0),
+                [assetAddress]: encode({ 'asset': { 'name': asset.name, 'date': date, 'status': status, 'owner': target } })
+            };
+            // Update ledger.
+            return state.set(data);
+        });
+    } catch (err) {
+        throw new InvalidTransaction('handlers.finalizeTransport: ' + err.message);
+    }
+}
+
 // Class: Definition for transaction handler.
 class JSONHandler extends TransactionHandler {
     // Constructor: Use base constructor definition to setup the class.
@@ -229,6 +314,16 @@ class JSONHandler extends TransactionHandler {
                 break;
             case 'requestTransport':
                 return requestTransport(state, asset, owner, target, transporter, status, date);
+                break;
+            case 'rejectTransportRequest':
+                return rejectTransportRequest(state, asset, owner, target, transporter, status, date);
+                break;
+            case 'acceptTransportRequest':
+                return acceptTransportRequest(state, asset, owner, target, transporter, status, date);
+                break;
+            case 'finalizeTransport':
+                return finalizeTransport(state, asset, owner, target, transporter, status, date);
+                break;
             default:
                 return Promise.resolve().then(() => { throw new InvalidTransaction('Wrong action provided: ' + action) });
                 break;

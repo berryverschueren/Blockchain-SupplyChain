@@ -22,6 +22,7 @@ app.clearViews = function () {
     clearOptions('[name="sel_requestTransport"]');
     clearInput('#tbl_allTransports');
     clearOptions('[name="sel_incomingTransportRequests"]');
+    clearOptions('[name="sel_currentTransports"]');
 }
 
 // Function: Refresh application cache data and views.
@@ -46,7 +47,7 @@ app.refresh = function () {
         });
         this.transports.forEach(transport => {
             // Add an entry to the application view.
-            addRow('#tbl_allTransports', transport.owner.name, transport.target.name, transport.transporter.name, transport.asset.name);
+            addRow('#tbl_allTransports', transport.owner.name, transport.target.name, transport.transporter.name, transport.asset.name, transport.status);
         });
         if (this.user) {
             // Clear application views.
@@ -59,9 +60,13 @@ app.refresh = function () {
                 }
             });
             this.transports.forEach(transport => {
-                if (transport.transporter.name === this.user.name) {
+                if (transport.transporter.name === this.user.name && transport.status === 'Transport requested!') {
                     // Add an entry to the application view.
                     addOption('[name="sel_incomingTransportRequests"]', transport.asset.name, transport.owner.name + ' => ' + transport.asset.name + ' => ' + transport.target.name);
+                }
+                if (transport.transporter.name === this.user.name && transport.status === 'Transport request accepted!') {
+                    // Add an entry to the application view.
+                    addOption('[name="sel_currentTransports"]', transport.asset.name, transport.owner.name + ' => ' + transport.asset.name + ' => ' + transport.target.name);
                 }
             });
         }
@@ -323,8 +328,9 @@ $('#btn_acceptTransportRequest').on('click', function () {
         let data = {
             'action': 'acceptTransportRequest',
             'asset': transport.asset,
-            'owner': app.user,
+            'owner': transport.owner,
             'target': transport.target,
+            'transporter': app.user,
             'status': 'Transport request accepted!'
         };
         // Submit payload.
@@ -343,9 +349,31 @@ $('#btn_rejectTransportRequest').on('click', function () {
         let data = {
             'action': 'rejectTransportRequest',
             'asset': transport.asset,
-            'owner': app.user,
+            'owner': transport.owner,
             'target': transport.target,
+            'transporter': app.user,
             'status': 'Transport request rejected!'
+        };
+        // Submit payload.
+        app.update(data);
+    }
+});
+
+// Event: Handle click event of btn_finalizeTransport.
+$('#btn_finalizeTransport').on('click', function () {
+    // Retrieve selected values.
+    const assetName = $('[name="sel_currentTransports"]').val();
+    const transport = app.transports.find(transport => transport.asset.name === assetName && transport.transporter.name === app.user.name);
+    // Verify values.
+    if (transport && app.user) {
+        // Construct payload.
+        let data = {
+            'action': 'finalizeTransport',
+            'asset': transport.asset,
+            'owner': transport.owner,
+            'target': transport.target,
+            'transporter': app.user,
+            'status': 'Transport finalized!' 
         };
         // Submit payload.
         app.update(data);
