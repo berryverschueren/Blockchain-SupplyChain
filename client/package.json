@@ -7,8 +7,9 @@
   },
   "main": "app.js",
   "scripts": {
-    "dev": "webpack && npm start",
-    "start": "node index.js"
+    "dev": "npm test && webpack && npm start",
+    "start": "node index.js",
+    "test": "mocha tests"
   },
   "keywords": [],
   "author": "Berry Verschueren",
@@ -32,5 +33,10 @@
     "webpack-hot-middleware": "^2.21.2",
     "webpack-hot-client": "^2.2.1",
     "request": "^2.85.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "chai": "^4.1.2",
+    "chai-http": "^4.0.0"
   }
 }
